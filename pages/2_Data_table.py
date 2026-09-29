@@ -3,7 +3,7 @@ import streamlit as st
 
 from main import load_data
 
-
+# Create a data table with one row for each column in the dataset.
 st.title("Data table")
 st.write("Table with one row for each column in the dataset.")
 

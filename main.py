@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+# Set the path to the data file
 DATA_PATH = (
     Path(__file__).resolve().parents[1]
     / "course_material"
@@ -11,7 +12,7 @@ DATA_PATH = (
     / "reservoirs.csv"
 )
 
-
+# Load the data from the CSV file and changes the column names to English. The date_Id column is converted to a datetime type.
 @st.cache_data
 def load_data():
     df = pd.read_csv(DATA_PATH)
@@ -34,7 +35,8 @@ def load_data():
 
     return df
 
-
+# Main application, which sets the page configuration and defines the available pages in the Streamlit app. 
+# The navigation is handled by the st.navigation function, which allows users to switch between different pages of the app.
 if __name__ == "__main__":
     st.set_page_config(
         page_title="Reservoir data",
