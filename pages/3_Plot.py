@@ -40,15 +40,19 @@ plot_df = df[
     & (df["date_Id"].dt.to_period("M").astype(str) <= end_month)
 ].copy()
 
-# Each date contains one row per region. Average the selected values by date
-# so the chart shows a single continuous time series instead of connecting
-# observations from different regions.
-plot_df = plot_df.groupby("date_Id", as_index=False)[numeric_columns].mean()
+# Each date contains several rows per area type. Average values within each
+# area type so the types remain separate in the time series.
+plot_df = (
+    plot_df.groupby(["date_Id", "region_type"], as_index=False)[numeric_columns]
+    .mean()
+    .sort_values(["date_Id", "region_type"])
+)
+area_types = plot_df["region_type"].dropna().unique().tolist()
 
 fig, ax = plt.subplots(figsize=(12, 6))
 
 if column_choice == "All columns":
-    # Normalize each series so columns with different units can be compared.
+    # Normalize each column so columns with different units can be compared.
     plot_values = plot_df[numeric_columns].copy()
     plot_values = (plot_values - plot_values.min()) / (
         plot_values.max() - plot_values.min()
@@ -56,18 +60,22 @@ if column_choice == "All columns":
     plot_values = plot_values.fillna(0)
 
     for column in numeric_columns:
-        ax.plot(
-            plot_df["date_Id"],
-            plot_values[column],
-            label=column,
-        )
+        for area_type in area_types:
+            area_mask = plot_df["region_type"] == area_type
+            ax.plot(
+                plot_df.loc[area_mask, "date_Id"],
+                plot_values.loc[area_mask, column],
+                label=f"{column} ({area_type})",
+            )
     ax.set_ylabel("Normalized value (0-1)")
 else:
-    ax.plot(
-        plot_df["date_Id"],
-        plot_df[column_choice],
-        label=column_choice,
-    )
+    for area_type in area_types:
+        area_mask = plot_df["region_type"] == area_type
+        ax.plot(
+            plot_df.loc[area_mask, "date_Id"],
+            plot_df.loc[area_mask, column_choice],
+            label=f"{column_choice} ({area_type})",
+        )
     ax.set_ylabel(column_choice)
 
 ax.set_title("Reservoir data over time")

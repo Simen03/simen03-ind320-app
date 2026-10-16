@@ -1,0 +1,17 @@
+# Virtual environments
+.venv/
+venv/
+
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Streamlit
+.streamlit/secrets.toml
+
+

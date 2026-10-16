@@ -5,9 +5,7 @@ import streamlit as st
 
 # Set the path to the data file
 DATA_PATH = (
-    Path(__file__).resolve().parents[1]
-    / "course_material"
-    / "D2Dbook"
+    Path(__file__).resolve().parent
     / "data"
     / "reservoirs.csv"
 )
