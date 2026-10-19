@@ -14,4 +14,6 @@ __pycache__/
 # Streamlit
 .streamlit/secrets.toml
 
-
+# Token
+no_sync/
+.env
