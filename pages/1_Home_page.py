@@ -7,6 +7,7 @@ st.set_page_config(
     layout="wide",
 )
 
+# Display the title and subheader for the home page
 st.title("Reservoir and cross-border flow data")
 st.subheader("Chose a page from the menu to the left to explore the data.")
 

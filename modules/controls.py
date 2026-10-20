@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-# 
+# Constants and functions for the sidebar controls and area labels used in the reservoir overview page.
 TYPES = ["EL", "NO", "VASS"]
 TYPE_NAMES = {"EL": "EL - price areas (NO1-NO5)", "NO": "NO - Norway total", "VASS": "VASS - watercourse areas"}
 VARIABLES = ["filling_level", "filling_Twh", "filling_level_previous_week", "change_filling_level"]

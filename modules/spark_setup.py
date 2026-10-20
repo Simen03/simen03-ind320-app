@@ -3,7 +3,7 @@ import sys
 import pyspark
 from pyspark.sql import SparkSession
 
-
+# Function to set up and return a SparkSession with the necessary environment variables and configurations for connecting to Cassandra.
 def get_spark(app_name="IND320"):
     env = {
         "JAVA_HOME": r"C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot",
@@ -19,6 +19,7 @@ def get_spark(app_name="IND320"):
     os.environ["PATH"] = env["HADOOP_HOME"] + r"\bin;" + os.environ["PATH"]
     os.makedirs(r"C:\tmp", exist_ok=True)   # Spark trenger mappen
 
+    # Set the Spark configuration
     conf = {
         "spark.jars.packages": "com.datastax.spark:spark-cassandra-connector_2.12:3.5.1",
         "spark.cassandra.connection.host": "localhost",

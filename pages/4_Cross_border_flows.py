@@ -12,7 +12,7 @@ Labels = {"import": "Into Norway", "export": "Out of Norway"}
 
 left, right = st.columns(2)
 
-# ---------------- Left: connection, year, pie chart ----------------
+# Left: pie chart of total flow per year, with selection of connection and year
 with left:
     st.subheader("Total per year")
 
@@ -43,7 +43,7 @@ with left:
         ax.set_title(f"{connection}, {year}")
         st.pyplot(fig)
 
-# ---------------- Right: months, line plot ----------------
+# Right: line plot of hourly flow per month, with selection of months
 with right:
     st.subheader("Hourly flow")
 
@@ -77,7 +77,7 @@ with right:
         fig2.autofmt_xdate()
         st.pyplot(fig2)
 
-# ---------------- Below: source documentation ----------------
+# Explain the data source and processing in an expander, so it can be hidden if the user wants to focus on the plots.
 with st.expander("About the data"):
     st.markdown(
         """

@@ -5,9 +5,11 @@ from modules.reservoir_data import load_reservoirs
 
 st.title("Reservoir overview")
 
+# Sidebar controls for selecting the download interval and area type, which are remembered between pages.
 start, end, area_type = sidebar_controls()
 variable = st.selectbox("Column", VARIABLES)
 
+# Load the reservoir data for the selected interval and area type, and filter it accordingly. If no data is available, display a warning and stop execution.
 df = load_reservoirs(start, end)
 df = df[df["region_type"] == area_type]
 df["date_Id"] = pd.to_datetime(df["date_Id"])
@@ -15,6 +17,8 @@ if df.empty:
     st.warning("No data for this selection.")
     st.stop()
 
+# Create a summary table for each area number, including the selected period values, mean, and latest value for the chosen variable. 
+# The table is displayed with a line chart for the selected period.
 rows = []
 for number, g in df.groupby("region_number"):
     g = g.sort_values("date_Id")
@@ -28,6 +32,7 @@ table = pd.DataFrame(rows)
 
 period_text = f"{start:%Y-%m-%d} to {end:%Y-%m-%d}"
 
+# Display the summary table with a line chart for the selected period, and include a caption indicating the date range and number of rows from NVE.
 lo, hi = df[variable].min(), df[variable].max()
 st.dataframe(
     table,
