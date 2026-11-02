@@ -1,6 +1,12 @@
 streamlit
 pandas
+numpy
 matplotlib
-pathlib
+requests
 pymongo
 cassandra-driver
+scipy
+statsmodels
+scikit-learn
+openmeteo-requests
+retry-requests

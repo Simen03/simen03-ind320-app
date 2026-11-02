@@ -8,13 +8,21 @@ if __name__ == "__main__":
         page_icon=":bar_chart:",
         layout="wide",
     )
-
-    pages = [
-        st.Page("pages/1_Home_page.py", title="Home"),
+    
+    pages = {
+    "": [st.Page("pages/1_Home_page.py", title="Home")],
+    "Reservoirs": [
         st.Page("pages/2_Reservoir_overview.py", title="Reservoir overview"),
         st.Page("pages/3_Reservoir_plot.py", title="Reservoir plot"),
-        st.Page("pages/4_Cross_border_flows.py", title="Cross-border flows")
-    ]
+        st.Page("pages/5_Reservoir_analysis.py", title="Reservoir analysis"),
+    ],
+    "Weather": [
+        st.Page("pages/6_Weather_anomalies.py", title="Weather anomalies"),
+    ],
+    "Power exchange": [
+        st.Page("pages/4_Cross_border_flows.py", title="Cross-border flows"),
+    ],
+}
 
     navigation = st.navigation(pages)
     navigation.run()
