@@ -13,7 +13,7 @@ number = region_selector(area_type)
 name = area_label(area_type, number)
 
 # Local control: the year only matters on this page
-year = st.selectbox("Year", list(range(2025, 1999, -1)), index=1)   # default 2024
+year = st.selectbox("Year", list(range(2025, 1999, -1)), index=1)   
 
 # Download settings are hidden in an expander; downloading happens automatically and is cached
 with st.expander("Download settings"):

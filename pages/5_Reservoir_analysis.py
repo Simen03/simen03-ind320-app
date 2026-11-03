@@ -41,7 +41,6 @@ with tab_stl:
 with tab_spec:
     c1, c2 = st.columns(2)
     window = c1.slider("Window length (weeks)", 26, min(260, len(fill)), 104)
-    # Overlap must be smaller than the window, so its max depends on the first slider
     overlap = c2.slider("Window overlap (weeks)", 0, window - 1, min(78, window - 1))
     st.pyplot(spectrogram_plot(fill, window_length=window, overlap=overlap))
     st.caption("The bright band at 1 cycle per year is the yearly filling/emptying cycle of the reservoirs.")

@@ -41,13 +41,13 @@ def region_selector(area_type):
     """Sidebar selector for ONE area within the chosen area type. Remembered between pages."""
     numbers = AREA_NUMBERS[area_type]
     saved = st.session_state.get("region_number", numbers[0])
-    if saved not in numbers:                 # e.g. NO5 was chosen, then area type changed to VASS
+    if saved not in numbers:                 
         saved = numbers[0]
     number = st.sidebar.selectbox(
         "Area",
         numbers,
         index=numbers.index(saved),
-        format_func=lambda n: area_label(area_type, n),   # shows NO3 / VASS 2 / Norway
+        format_func=lambda n: area_label(area_type, n),  
     )
     st.session_state["region_number"] = number
     return number

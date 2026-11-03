@@ -25,19 +25,19 @@ def download_weather(region_id, start, end, n_locations=10, coords_file=COORDS_F
         c = coords[coords["region_id"] == region_id]
 
     # ERA5 grid is ~0.25 deg: round and drop duplicates so we don't download the same cell twice
-    c = c.assign(lat=c.lat.round(2), lon=c.lon.round(2)).drop_duplicates(["lat", "lon"])
+    c = c.assign(lat=(c.lat / 0.25).round() * 0.25, lon=(c.lon / 0.25).round() * 0.25).drop_duplicates(["lat", "lon"])
     # Only use n_locations of the 1000 points: keeps the URL short and stays within the API quota
     c = c.sample(min(n_locations, len(c)), random_state=1)
 
     params = {
-            "latitude": c["lat"].tolist(),        # several locations in one request
+            "latitude": c["lat"].tolist(),        
             "longitude": c["lon"].tolist(),
             "start_date": str(start), "end_date": str(end),
             "hourly": HOURLY_VARS,
             "models": "era5",
             "timezone": "Europe/Oslo",
         }
-    responses = client.weather_api(ARCHIVE_URL, params=params)   # one response per location
+    responses = client.weather_api(ARCHIVE_URL, params=params)   
     
     frames = []
     for r in responses:

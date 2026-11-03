@@ -22,7 +22,6 @@ if df.empty:
 first_month = df["date_Id"].min().to_period("M")
 df = df[df["date_Id"].dt.to_period("M") == first_month].sort_values("date_Id")
 
-# One row per variable (column in the data); each row gets its own small line chart (row-wise LineChartColumn)
 rows = []
 for variable in VARIABLES:
     rows.append({
@@ -33,7 +32,7 @@ for variable in VARIABLES:
     })
 table = pd.DataFrame(rows)
 
-# No shared y_min/y_max here: the variables have different scales, so each row is scaled on its own
+
 st.dataframe(
     table,
     hide_index=True,
@@ -41,4 +40,3 @@ st.dataframe(
         "First month": st.column_config.LineChartColumn(f"First month: {first_month}"),
     },
 )
-st.caption(f"{name}, first month of the selected interval ({first_month}), {len(df)} weekly values from NVE")

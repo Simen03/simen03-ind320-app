@@ -17,15 +17,15 @@ def spc_outliers(series, cutoff=0.01, n_std=3.0):
     n_std: number of robust standard deviations for the control limits."""
     x = series.to_numpy()
     coefs = dct(x, norm="ortho")
-    k = int(cutoff * len(coefs))                 # number of low-frequency coefficients to remove
+    k = int(cutoff * len(coefs))                 
 
-    low = coefs.copy(); low[k:] = 0              # keep only the slow/seasonal part
+    low = coefs.copy(); low[k:] = 0              
     trend = idct(low, norm="ortho")
-    satv = x - trend                             # high-pass = original - low-pass
+    satv = x - trend                             
 
     med = np.median(satv)
-    sigma = median_abs_deviation(satv, scale="normal")   # robust estimate of std
-    upper = trend + med + n_std * sigma          # boundaries shown on the ORIGINAL scale
+    sigma = median_abs_deviation(satv, scale="normal")  
+    upper = trend + med + n_std * sigma          
     lower = trend + med - n_std * sigma
     is_out = (satv > med + n_std * sigma) | (satv < med - n_std * sigma)
 
@@ -46,10 +46,10 @@ def spc_outliers(series, cutoff=0.01, n_std=3.0):
 
 def lof_anomalies(series, contamination=0.01, n_neighbors=20):
     """Temperature anomalies using Local Outlier Factor. contamination = expected share of outliers."""
-    t = np.arange(len(series))                                      # time as a feature
+    t = np.arange(len(series))                                      
     X = StandardScaler().fit_transform(np.column_stack([t, series.to_numpy()]))
     lof = LocalOutlierFactor(n_neighbors=n_neighbors, contamination=contamination)
-    is_out = lof.fit_predict(X) == -1                               # -1 = outlier
+    is_out = lof.fit_predict(X) == -1                               
 
     fig, ax = plt.subplots(figsize=(12, 4))
     ax.plot(series.index, series, lw=0.6, label="Temperature")
@@ -75,9 +75,9 @@ def stl_plot(series, period=52, seasonal=13, trend=89, robust=True):
 def spectrogram_plot(series, window_length=104, overlap=78):
     """Spectrogram of weekly data. window_length and overlap are in weeks."""
     s = series.asfreq("W-SUN").interpolate()
-    f, t, Sxx = spectrogram(s.to_numpy(), fs=52,          # fs=52 -> frequency in cycles per year
+    f, t, Sxx = spectrogram(s.to_numpy(), fs=52,          
                             nperseg=window_length, noverlap=overlap, detrend="linear")
-    times = s.index[0] + pd.to_timedelta(t * 365.25, unit="D")   # convert to dates for the x-axis
+    times = s.index[0] + pd.to_timedelta(t * 365.25, unit="D")   
 
     fig, ax = plt.subplots(figsize=(12, 4))
     m = ax.pcolormesh(times, f, 10 * np.log10(Sxx + 1e-12), shading="auto")
