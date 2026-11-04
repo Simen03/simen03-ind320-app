@@ -17,3 +17,6 @@ __pycache__/
 # Token
 no_sync/
 .env
+
+# open-meteo request cache
+*.sqlite

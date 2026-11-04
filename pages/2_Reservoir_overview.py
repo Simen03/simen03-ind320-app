@@ -1,45 +1,42 @@
 import pandas as pd
 import streamlit as st
-from modules.controls import sidebar_controls, area_label, VARIABLES
+from modules.controls import sidebar_controls, region_selector, area_label, VARIABLES
 from modules.reservoir_data import load_reservoirs
 
 st.title("Reservoir overview")
 
-# Sidebar controls for selecting the download interval and area type, which are remembered between pages.
+# Global sidebar controls: interval, area type and area (remembered between pages)
 start, end, area_type = sidebar_controls()
-variable = st.selectbox("Column", VARIABLES)
+number = region_selector(area_type)
+name = area_label(area_type, number)
 
-# Load the reservoir data for the selected interval and area type, and filter it accordingly. If no data is available, display a warning and stop execution.
+# Load data for the selected interval and keep only the chosen area
 df = load_reservoirs(start, end)
-df = df[df["region_type"] == area_type]
+df = df[(df["region_type"] == area_type) & (df["region_number"] == number)].copy()
 df["date_Id"] = pd.to_datetime(df["date_Id"])
 if df.empty:
     st.warning("No data for this selection.")
     st.stop()
 
-# Create a summary table for each area number, including the selected period values, mean, and latest value for the chosen variable. 
-# The table is displayed with a line chart for the selected period.
+# Keep only the first month that has data in the selected interval
+first_month = df["date_Id"].min().to_period("M")
+df = df[df["date_Id"].dt.to_period("M") == first_month].sort_values("date_Id")
+
 rows = []
-for number, g in df.groupby("region_number"):
-    g = g.sort_values("date_Id")
+for variable in VARIABLES:
     rows.append({
-        "Area": area_label(area_type, number),
-        "Selected period": g[variable].tolist(),     # whole interval, not just the first month
-        "Mean": g[variable].mean(),
-        "Latest": g[variable].iloc[-1],
+        "Variable": variable,
+        "First month": df[variable].tolist(),
+        "Mean": df[variable].mean(),
+        "Latest": df[variable].iloc[-1],
     })
 table = pd.DataFrame(rows)
 
-period_text = f"{start:%Y-%m-%d} to {end:%Y-%m-%d}"
 
-# Display the summary table with a line chart for the selected period, and include a caption indicating the date range and number of rows from NVE.
-lo, hi = df[variable].min(), df[variable].max()
 st.dataframe(
     table,
     hide_index=True,
     column_config={
-        "Selected period": st.column_config.LineChartColumn(
-            period_text, y_min=float(lo), y_max=float(hi)),
+        "First month": st.column_config.LineChartColumn(f"First month: {first_month}"),
     },
 )
-st.caption(f"{start.date()} to {end.date()}, {len(df)} rows from NVE")

@@ -33,3 +33,21 @@ def sidebar_controls():
     start = pd.Period(interval[0], "M").start_time
     end = pd.Period(interval[1], "M").end_time
     return start, end, area_type
+
+
+AREA_NUMBERS = {"EL": [1, 2, 3, 4, 5], "VASS": [1, 2, 3], "NO": [0]}
+
+def region_selector(area_type):
+    """Sidebar selector for ONE area within the chosen area type. Remembered between pages."""
+    numbers = AREA_NUMBERS[area_type]
+    saved = st.session_state.get("region_number", numbers[0])
+    if saved not in numbers:                 
+        saved = numbers[0]
+    number = st.sidebar.selectbox(
+        "Area",
+        numbers,
+        index=numbers.index(saved),
+        format_func=lambda n: area_label(area_type, n),  
+    )
+    st.session_state["region_number"] = number
+    return number
