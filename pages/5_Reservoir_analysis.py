@@ -1,17 +1,17 @@
 import streamlit as st
 
 from modules.analysis import spectrogram_plot, stl_plot
-from modules.controls import area_label, region_selector, sidebar_controls
+from modules.controls import area_label, get_selection
 from modules.NVE_API import select_area
 from modules.reservoir_data import load_reservoirs
+from modules.style import page_header
 
-st.title("Reservoir analysis")
-st.write("Seasonal-trend decomposition (STL) and spectrogram of the filling level. "
-         "Period, area type and area are set in the sidebar.")
+page_header("Reservoir analysis", "Anomalies",
+            "Seasonal-trend decomposition (STL) and spectrogram of the filling level. "
+            "Period, area type and area are set in the sidebar.")
 
-# Global controls (shared with the other pages)
-start, end, area_type = sidebar_controls()
-number = region_selector(area_type)
+# Global selections from the sidebar or the map (shared with the other pages)
+start, end, area_type, number = get_selection()
 name = area_label(area_type, number)
 
 # Weekly filling level for the chosen area and interval

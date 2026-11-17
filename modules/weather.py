@@ -64,3 +64,12 @@ def download_weather(region_id, start, end, n_locations=10, coords_file=COORDS_F
 def load_weather(region_id, year, n_locations=10):
     end = min(pd.Timestamp(f"{year}-12-31"), pd.Timestamp.today().normalize() - pd.Timedelta(days=6))
     return download_weather(region_id, f"{year}-01-01", end.strftime("%Y-%m-%d"), n_locations)
+
+def weekly_weather(region_id, years, n_locations=2):
+    """Hourly weather for several years -> weekly values in Norwegian time, weeks ending on Sunday
+    (same time axis as Magasinstatistikk). Precipitation is summed per week, the other properties averaged."""
+    hourly = pd.concat([load_weather(region_id, year, n_locations) for year in years])
+    hourly.index = hourly.index.tz_convert("Europe/Oslo").tz_localize(None)    # UTC -> Norwegian time
+    weekly = hourly.resample("W-SUN").mean()
+    weekly["precipitation"] = hourly["precipitation"].resample("W-SUN").sum()
+    return weekly

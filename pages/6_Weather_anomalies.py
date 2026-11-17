@@ -1,15 +1,15 @@
 import streamlit as st
 
 from modules.analysis import lof_anomalies, spc_outliers
-from modules.controls import area_label, region_selector, sidebar_controls
+from modules.controls import area_label, get_selection
+from modules.style import page_header
 from modules.weather import load_weather, WEATHER_VARS
 
-st.title("Weather outliers and anomalies")
-st.write("Hourly ERA5 reanalysis data from open-meteo, averaged over sampled locations in the chosen area.")
+page_header("Weather outliers and anomalies", "Anomalies",
+            "Hourly ERA5 reanalysis data from open-meteo, averaged over sampled locations in the chosen area.")
 
-# Global controls: the weather area follows the same selector as the reservoir data
-start, end, area_type = sidebar_controls()
-number = region_selector(area_type)
+# Global selections: the weather area follows the same selection as the reservoir data
+start, end, area_type, number = get_selection()
 name = area_label(area_type, number)
 
 # Local control: the year only matters on this page

@@ -6,19 +6,24 @@ import plotly.graph_objects as go
 import streamlit as st
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
+import plotly.express as px
+from modules.elevation import elevation_points, get_elevation
 
-from modules.controls import AREA_NUMBERS, area_label, sidebar_controls
+from modules.controls import AREA_NUMBERS, area_label, get_selection, select_area_on_map
 from modules.geo import find_area, load_geojson
 from modules.reservoir_data import load_reservoirs
-from modules.style import COLORS, LAYOUT
+from modules.style import COLORS, LAYOUT, page_header
 from modules.weather import WEATHER_VARS, load_weather
 
-st.title("Map and area selection")
-st.caption("Colour the areas by filling level or weather for a chosen week. "
-           "Click an area to select it - the selection is used on the other pages.")
+page_header("Map and area selection", "Explore",
+            "Colour the areas by filling level or weather for a chosen week. "
+            "Click an area to select it - the selection is used on the other pages.")
+
+# Global selections: the time interval limits which weeks can be chosen on the map
+start, end, area_type, _ = get_selection()
 
 # Global controls: the time interval limits which weeks can be chosen on the map
-start, end, area_type = sidebar_controls()
+
 df = load_reservoirs(start, end)
 
 # ---------- Local controls, grouped in a frame ----------
@@ -40,6 +45,8 @@ with st.container(border=True):
     week = st.select_slider("Week", options=weeks,
                             value=saved_week if saved_week in weeks else weeks[-1],
                             format_func=lambda d: f"Week {d.isocalendar().week}, {d:%d %b %Y}")
+    show_elevation = st.checkbox("Show elevation of sample points in the selected area (open-meteo elevation API)",
+                            key="map_elevation")
     st.session_state["map_week"] = week
 
 # Which areas to draw: price areas or water areas. For weather, follow the global area type.
@@ -79,6 +86,7 @@ vmax = max(values.values()) if values else 1
 cmap = LinearColormap(["#deebf7", COLORS["main"]], vmin=vmin, vmax=vmax if vmax > vmin else vmin + 1,
                       caption=f"{label} ({unit})")
 
+
 # Copy the cached GeoJSON before adding values to it (cached objects must not be changed)
 geojson = copy.deepcopy(load_geojson(map_type))
 for feature in geojson["features"]:
@@ -108,6 +116,27 @@ folium.GeoJson(
 ).add_to(m)
 cmap.add_to(m)
 
+# ---------- Elevation of sample points (bonus: open-meteo elevation API) ----------
+points = None
+if show_elevation and selected is not None:
+    try:
+        points = elevation_points(area_label(map_type, selected))
+    except Exception as e:
+        st.warning(f"Could not get elevation data from open-meteo: {e}")
+
+if points is not None:
+    # Colour scale from low (green) to high (brown/white), like a terrain map
+    elev_cmap = LinearColormap(["#1a9850", "#fee08b", "#8c510a", "#f7f7f7"],
+                               vmin=points["elevation"].min(), vmax=points["elevation"].max(),
+                               caption="Elevation of sample points (m)")
+    for _, pt in points.iterrows():
+        folium.CircleMarker(
+            location=[pt["lat"], pt["lon"]], radius=4, weight=1,
+            color=elev_cmap(pt["elevation"]), fill=True, fill_opacity=0.9,
+            tooltip=f"{pt['elevation']:.0f} m",
+        ).add_to(m)
+    elev_cmap.add_to(m)
+
 map_col, side_col = st.columns([3, 2])
 with map_col:
     # Only the last click is returned, so the app does not rerun when the map is moved or zoomed
@@ -120,9 +149,7 @@ if clicked and clicked != st.session_state.get("last_map_click"):
     st.session_state["last_map_click"] = clicked
     number = find_area(map_type, clicked["lat"], clicked["lng"])
     if number is not None:
-        st.session_state["area_type"] = map_type
-        st.session_state["region_number"] = number
-        st.rerun()                               # redraw with the new outline and plots
+        select_area_on_map(map_type, number)                                # redraw with the new outline and plots
 
 # ---------- Side panel: selected area with its time series ----------
 with side_col:
@@ -131,6 +158,18 @@ with side_col:
     else:
         st.metric(f"Selected area: {area_label(map_type, selected)}",
                   "no data" if selected not in values else f"{values[selected]:.1f} {unit}")
+
+                # Elevation at the last clicked point, and mean elevation of the sample points
+        click = st.session_state.get("last_map_click")
+        e1, e2 = st.columns(2)
+        if click:
+            try:
+                height = get_elevation((click["lat"],), (click["lng"],))[0]
+                e1.metric("Elevation at clicked point", f"{height:.0f} m")
+            except Exception:
+                e1.metric("Elevation at clicked point", "–")
+        if points is not None:
+            e2.metric("Mean elevation, sample points", f"{points['elevation'].mean():.0f} m")
 
         # Time series of the selected area, with a dashed line at the chosen week
         if selected in series:
@@ -142,3 +181,11 @@ with side_col:
                                    title=f"{label} over time")
             st.plotly_chart(fig_line)
             st.caption("The dashed line marks the chosen week.")
+
+# ---------- Distribution of elevation in the selected area ----------
+if points is not None:
+    fig_elev = px.histogram(points, x="elevation", nbins=20, color_discrete_sequence=[COLORS["main"]],
+                            labels={"elevation": "Elevation (m)"})
+    fig_elev.update_layout(**LAYOUT, height=280, yaxis_title="Number of points",
+                           title=f"Elevation of {len(points)} sample points in {area_label(map_type, selected)}")
+    st.plotly_chart(fig_elev)

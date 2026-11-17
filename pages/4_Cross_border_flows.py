@@ -2,12 +2,12 @@ import calendar
 
 import plotly.express as px
 import plotly.graph_objects as go
-from modules.style import COLORS
+from modules.style import COLORS, page_header
 import streamlit as st
-
 from modules.mongo import list_connections, load_flows
 
-st.title("Cross-border flows")
+page_header("Cross-border flows", "Explore",
+            "Local selections: connection, year and months. The area and interval in the sidebar are not used here.")
 
 Colours = {"import": COLORS["import"], "export": COLORS["export"]}   
 Labels = {"import": "Into Norway", "export": "Out of Norway"}
