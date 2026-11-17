@@ -1,13 +1,15 @@
 import calendar
 
-import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
+from modules.style import COLORS
 import streamlit as st
 
 from modules.mongo import list_connections, load_flows
 
 st.title("Cross-border flows")
 
-Colours = {"import": "#2a78d6", "export": "#eb6834"}   # same colour per direction in both plots
+Colours = {"import": COLORS["import"], "export": COLORS["export"]}   
 Labels = {"import": "Into Norway", "export": "Out of Norway"}
 
 left, right = st.columns(2)
@@ -31,17 +33,17 @@ with left:
     if pie.sum() == 0:
         st.info("No flow in this year.")
     else:
-        fig, ax = plt.subplots(figsize=(5, 5))
-        ax.pie(
-            pie.values,
-            labels=[f"{Labels[d]}\n{v:.0f} GWh" for d, v in pie.items()],
-            colors=[Colours[d] for d in pie.index],
-            autopct="%1.1f%%",
-            startangle=90,
-            wedgeprops={"edgecolor": "white", "linewidth": 2},
-        )
-        ax.set_title(f"{connection}, {year}")
-        st.pyplot(fig)
+        # Donut chart of total flow in and out of Norway; hover shows GWh
+        fig = go.Figure(go.Pie(
+            labels=[Labels[d] for d in pie.index],
+            values=pie.values,
+            marker=dict(colors=[Colours[d] for d in pie.index], line=dict(color="white", width=2)),
+            hole=0.4,
+            textinfo="percent+label",
+            hovertemplate="%{label}: %{value:.0f} GWh<extra></extra>",
+        ))
+        fig.update_layout(title=f"{connection}, {year}", showlegend=False, height=420)
+        st.plotly_chart(fig)
 
 # Right: line plot of hourly flow per month, with selection of months
 with right:
@@ -58,24 +60,15 @@ with right:
     if not months:
         st.info("Select at least one month.")
     else:
-        fig2, ax2 = plt.subplots(figsize=(7, 5))
-        for d in ["export", "import"]:
-            first = True
-            for m in sorted(months):
-                g = df[(df["year"] == year) & (df["month"] == m) & (df["direction"] == d)]
-                if g.empty:
-                    continue
-                # one segment per month, so non-adjacent months are not joined by a line
-                ax2.plot(g["time"], g["mw"], color=Colours[d], linewidth=1,
-                         label=Labels[d] if first else None)
-                first = False
-        ax2.set_title(f"{connection}, {year}")
-        ax2.set_xlabel("Time (Europe/Oslo)")
-        ax2.set_ylabel("MW")
-        ax2.grid(alpha=0.3)
-        ax2.legend()
-        fig2.autofmt_xdate()
-        st.pyplot(fig2)
+        # Selected months; line_group="month" draws one line per month,
+        # so non-adjacent months are not joined by a line
+        sel = df[(df["year"] == year) & (df["month"].isin(months))].copy()
+        sel["Direction"] = sel["direction"].map(Labels)
+        fig2 = px.line(sel, x="time", y="mw", color="Direction", line_group="month",
+                       color_discrete_map={Labels[d]: c for d, c in Colours.items()},
+                       labels={"time": "Time (Europe/Oslo)", "mw": "MW"},
+                       title=f"{connection}, {year}")
+        st.plotly_chart(fig2)
 
 # Explain the data source and processing in an expander, so it can be hidden if the user wants to focus on the plots.
 with st.expander("About the data"):

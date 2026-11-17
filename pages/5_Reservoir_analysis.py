@@ -36,11 +36,11 @@ with tab_stl:
                       help="Odd number larger than the period (52 weeks). Larger values give a smoother trend.")
     robust = c3.checkbox("Robust", value=True,
                          help="Down-weights unusual weeks so they do not distort trend and season.")
-    st.pyplot(stl_plot(fill, seasonal=seasonal, trend=trend, robust=robust))
+    st.plotly_chart(stl_plot(fill, seasonal=seasonal, trend=trend, robust=robust))
 
 with tab_spec:
     c1, c2 = st.columns(2)
     window = c1.slider("Window length (weeks)", 26, min(260, len(fill)), 104)
     overlap = c2.slider("Window overlap (weeks)", 0, window - 1, min(78, window - 1))
-    st.pyplot(spectrogram_plot(fill, window_length=window, overlap=overlap))
-    st.caption("The bright band at 1 cycle per year is the yearly filling/emptying cycle of the reservoirs.")
+    st.plotly_chart(spectrogram_plot(fill, window_length=window, overlap=overlap))
+    st.caption("The dark band at 1 cycle per year is the yearly filling/emptying cycle of the reservoirs.")

@@ -11,6 +11,14 @@ COORDS_FILE = Path(__file__).resolve().parent.parent / "data" / "region_coords.c
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 HOURLY_VARS = ["temperature_2m", "precipitation", "wind_speed_10m", "relative_humidity_2m"]
 
+# Display name and unit for each weather variable, used in selectors and plot labels
+WEATHER_VARS = {
+    "temperature_2m": ("Temperature", "°C"),
+    "precipitation": ("Precipitation", "mm"),
+    "wind_speed_10m": ("Wind speed", "km/h"),
+    "relative_humidity_2m": ("Relative humidity", "%"),
+}
+
 # Retrying session: open-meteo sometimes answers with temporary errors
 client = openmeteo_requests.Client(session=retry(requests.Session(), retries=5, backoff_factor=0.2))
 
@@ -54,4 +62,5 @@ def download_weather(region_id, start, end, n_locations=10, coords_file=COORDS_F
 # Streamlit wrapper: downloads once per (region, year, n_locations) and keeps the result for 24 hours.
 @st.cache_data(ttl=24 * 3600, show_spinner="Downloading weather data from open-meteo ...")
 def load_weather(region_id, year, n_locations=10):
-    return download_weather(region_id, f"{year}-01-01", f"{year}-12-31", n_locations)
+    end = min(pd.Timestamp(f"{year}-12-31"), pd.Timestamp.today().normalize() - pd.Timedelta(days=6))
+    return download_weather(region_id, f"{year}-01-01", end.strftime("%Y-%m-%d"), n_locations)

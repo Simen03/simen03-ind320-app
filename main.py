@@ -12,6 +12,7 @@ if __name__ == "__main__":
     pages = {
     "": [st.Page("pages/1_Home_page.py", title="Home")],
     "Reservoirs": [
+        st.Page("pages/7_Map.py", title="Map and area selection"),
         st.Page("pages/2_Reservoir_overview.py", title="Reservoir overview"),
         st.Page("pages/3_Reservoir_plot.py", title="Reservoir plot"),
         st.Page("pages/5_Reservoir_analysis.py", title="Reservoir analysis"),

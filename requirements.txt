@@ -1,7 +1,6 @@
 streamlit
 pandas
 numpy
-matplotlib
 requests
 pymongo
 cassandra-driver
@@ -10,3 +9,7 @@ statsmodels
 scikit-learn
 openmeteo-requests
 retry-requests
+plotly
+folium
+streamlit-folium
+shapely
