@@ -20,7 +20,11 @@ def global_controls():
     months = [p.strftime("%Y-%m") for p in pd.period_range("1995-01", this_month, freq="M")]
 
     # Defaults the first time the app is opened: the last five years and the price areas
-    st.session_state.setdefault("interval", (months[-61], months[-1]))
+    # Saved interval, or the last five years the first time the app is opened.
+    # Checked, so an invalid value from an earlier version of the app is replaced by the default.
+    saved = st.session_state.get("interval")
+    if not (isinstance(saved, (tuple, list)) and len(saved) == 2 and all(m in months for m in saved)):
+        saved = (months[-61], months[-1])
     st.session_state.setdefault("area_type", "EL")
 
     # A click on the map is stored as 'pending_area' and applied here, BEFORE the widgets are drawn
@@ -35,7 +39,10 @@ def global_controls():
 
     with st.sidebar:
         st.header("Selection")
-        st.select_slider("Time interval (months)", options=months, key="interval")
+        # No key: a select_slider only becomes a range slider (two handles) when `value` is a pair,
+        # so the current interval is passed as value and stored in the session state afterwards
+        st.session_state["interval"] = tuple(
+        st.select_slider("Time interval (months)", options=months, value=saved))
         st.radio("Area type", TYPES, format_func=TYPE_NAMES.get, key="area_type")
         st.selectbox("Area", AREA_NUMBERS[st.session_state["area_type"]],
                      format_func=lambda n: area_label(st.session_state["area_type"], n), key="region_number")

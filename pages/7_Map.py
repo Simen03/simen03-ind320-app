@@ -22,8 +22,6 @@ page_header("Map and area selection", "Explore",
 # Global selections: the time interval limits which weeks can be chosen on the map
 start, end, area_type, _ = get_selection()
 
-# Global controls: the time interval limits which weeks can be chosen on the map
-
 df = load_reservoirs(start, end)
 
 # ---------- Local controls, grouped in a frame ----------
@@ -159,7 +157,7 @@ with side_col:
         st.metric(f"Selected area: {area_label(map_type, selected)}",
                   "no data" if selected not in values else f"{values[selected]:.1f} {unit}")
 
-                # Elevation at the last clicked point, and mean elevation of the sample points
+        # Elevation at the last clicked point, and mean elevation of the sample points
         click = st.session_state.get("last_map_click")
         e1, e2 = st.columns(2)
         if click:

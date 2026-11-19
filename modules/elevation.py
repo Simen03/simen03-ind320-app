@@ -4,24 +4,18 @@ import streamlit as st
 
 from modules.weather import COORDS_FILE
 
-ELEVATION_URL = "https://api.open-meteo.com/v1/elevation"
-MAX_PER_REQUEST = 100                      # the API accepts at most 100 coordinates per request
+ELEVATION_URL = "https://api.open-meteo.com/v1/elevation"                     # the API accepts at most 100 coordinates per request
 
 
 @st.cache_data(show_spinner="Looking up elevation (open-meteo) ...")
 def get_elevation(lats, lons):
-    """Elevation in metres for each (lat, lon) pair from open-meteo's elevation API.
+    """Elevation in metres for each (lat, lon) pair from open-meteo's elevation API (max 100 points per request).
     lats and lons are tuples, so the result can be cached (elevation does not change)."""
-    elevations = []
-    for i in range(0, len(lats), MAX_PER_REQUEST):
-        params = {
-            "latitude": ",".join(f"{v:.4f}" for v in lats[i:i + MAX_PER_REQUEST]),
-            "longitude": ",".join(f"{v:.4f}" for v in lons[i:i + MAX_PER_REQUEST]),
-        }
-        response = requests.get(ELEVATION_URL, params=params, timeout=30)
-        response.raise_for_status()                  # clear error if the API is unavailable
-        elevations += response.json()["elevation"]
-    return elevations
+    params = {"latitude": ",".join(f"{v:.4f}" for v in lats),
+              "longitude": ",".join(f"{v:.4f}" for v in lons)}
+    response = requests.get(ELEVATION_URL, params=params, timeout=30)
+    response.raise_for_status()                      # clear error if the API is unavailable
+    return response.json()["elevation"]
 
 
 @st.cache_data(show_spinner="Looking up elevation of sample points ...")

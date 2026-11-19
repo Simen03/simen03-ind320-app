@@ -9,7 +9,6 @@ from retry_requests import retry
 # Path to the sampled coordinates made in the notebook (works from both notebooks/ and the app root)
 COORDS_FILE = Path(__file__).resolve().parent.parent / "data" / "region_coords.csv"
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
-HOURLY_VARS = ["temperature_2m", "precipitation", "wind_speed_10m", "relative_humidity_2m"]
 
 # Display name and unit for each weather variable, used in selectors and plot labels
 WEATHER_VARS = {
@@ -18,6 +17,7 @@ WEATHER_VARS = {
     "wind_speed_10m": ("Wind speed", "km/h"),
     "relative_humidity_2m": ("Relative humidity", "%"),
 }
+HOURLY_VARS = list(WEATHER_VARS)
 
 # Retrying session: open-meteo sometimes answers with temporary errors
 client = openmeteo_requests.Client(session=retry(requests.Session(), retries=5, backoff_factor=0.2))
